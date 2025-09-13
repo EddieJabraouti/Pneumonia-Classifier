@@ -67,7 +67,7 @@ train_dataset = PneumoniaDataset('data/chest_xray/train', transform=train_tf)
 val_dataset   = PneumoniaDataset('data/chest_xray/val',   transform=eval_tf)
 test_dataset  = PneumoniaDataset('data/chest_xray/test',  transform=eval_tf)
 
-num_workers = min(8, (os.cpu_count() or 2))  # 126 was way too high; it can cause crashes
+num_workers = min(8, (os.cpu_count() or 2))  
 common_loader_args = dict(batch_size=32, pin_memory=torch.cuda.is_available(),
                           num_workers=num_workers, persistent_workers=num_workers>0)
 
@@ -79,7 +79,8 @@ test_loader  = DataLoader(test_dataset,  shuffle=False, **common_loader_args)
 model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
 model.fc = nn.Sequential(
     nn.Dropout(p=0.7), 
-    nn.Linear(model.fc.in_features, 3)
+    nn.Linear(model.fc.in_features, 3),
+    nn.ReLU(inplace=True)
 )
 model.to(device)
 
