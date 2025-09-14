@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
+from torch.optim.lr_scheduler import StepLR
 from torchvision import transforms, models
 from sklearn.metrics import accuracy_score
 ImageFile.LOAD_TRUNCATED_IMAGES = True  # tolerate partial/corrupt files
@@ -80,12 +81,14 @@ model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
 model.fc = nn.Sequential(
     nn.Dropout(p=0.7), 
     nn.Linear(model.fc.in_features, 3),
-    nn.ReLU(inplace=True)
+    nn.ReLU(inplace=True), 
 )
 model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
+scheduler = StepLR(optimizer, step_size = 4, gamma = 0.1)
+
 
 num_epochs = 16
 
@@ -104,6 +107,7 @@ for epoch in range(num_epochs):
         optimizer.step()
 
         running_loss += loss.item()
+    scheduler.step()
 
     print(f"Epoch {epoch+1}/{num_epochs} - Loss: {running_loss/len(train_loader):.4f}")
 
