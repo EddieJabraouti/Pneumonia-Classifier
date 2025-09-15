@@ -5,9 +5,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
-from torch.optim.lr_scheduler import CosineAnnealingLR
 from torchvision import transforms, models
 from sklearn.metrics import accuracy_score
+#from torch.optim.lr_scheduler import CosineAnnealingLR
 ImageFile.LOAD_TRUNCATED_IMAGES = True  # tolerate partial/corrupt files
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -50,15 +50,15 @@ class PneumoniaDataset(Dataset):
 
 # Transforms
 train_tf = transforms.Compose([
-    transforms.Resize(420),
-    transforms.CenterCrop(384),
+    transforms.Resize(256), #Resize(420)
+    transforms.CenterCrop(224), #CenterCrop(384)
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225]),
 ])
 eval_tf = transforms.Compose([
-    transforms.Resize(420),
-    transforms.CenterCrop(384),
+    transforms.Resize(256), #Resize(420)
+    transforms.CenterCrop(224), #CenterCrop(384)
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225]),
 ])
@@ -72,35 +72,27 @@ num_workers = min(8, (os.cpu_count() or 2))
 common_loader_args = dict(batch_size=32, pin_memory=torch.cuda.is_available(),
                           num_workers=num_workers, persistent_workers=num_workers>0)
 
-from torch.utils.data import WeightedRandomSampler 
-import collections
 
-counts = collections.Counter(train_dataset.labels)
-sample_weights = [1.0/counts[y] for y in train_dataset.labels]
-sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
 
-train_loader = DataLoader(train_dataset, sampler=sampler, shuffle=False, **common_loader_args)
+train_loader = DataLoader(train_dataset, shuffle=True,  **common_loader_args)
 val_loader   = DataLoader(val_dataset,   shuffle=False, **common_loader_args)
 test_loader  = DataLoader(test_dataset,  shuffle=False, **common_loader_args)
 
 # Model
 model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
 model.fc = nn.Sequential(
-    nn.Dropout(p=0.5), 
-    nn.Linear(model.fc.in_features, 256), 
-    nn.SiLU(inplace=True),
-    nn.Dropout(p=0.3),
-    nn.Linear(256, 128), 
+    nn.Dropout(p=0.7), 
+    nn.Linear(model.fc.in_features, 2),
+    nn.ReLU(inplace=True)
 )
 model.to(device)
 
-criterion = nn.CrossEntropyLoss(label_smoothing = 0.3)
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay =0.01)
-steps_per_epoch = max(1,len(train_loader))
-
+criterion = nn.CrossEntropyLoss() #label_smoothing = 0.3
+optimizer = optim.Adam(model.parameters(), lr=1e-3) #lr = =0.001, weight_decay = 0.01
+steps_per_epoch = max(1, len(train_loader))
 
 num_epochs = 16
-scheduler = CosineAnnealingLR(optimizer, T_max = num_epochs)
+#scheduler = CosignAnnealingLR(optimizer, T_max = num_epochs)
 
 for epoch in range(num_epochs):
     model.train()
@@ -117,7 +109,8 @@ for epoch in range(num_epochs):
         optimizer.step()
 
         running_loss += loss.item()
-    scheduler.step()
+    #scheduler.step()
+
     print(f"Epoch {epoch+1}/{num_epochs} - Loss: {running_loss/len(train_loader):.4f}")
 
     # Validation
@@ -138,7 +131,7 @@ model.eval()
 test_labels, test_preds = [], []
 with torch.no_grad():
     for images, labels in test_loader:
-        images = images.to(device, non_blocking=True)
+        images = images.to(device, non_blocking=True) 
         outputs = model(images)
         preds = outputs.argmax(1).cpu().numpy()
         test_preds.extend(preds)
