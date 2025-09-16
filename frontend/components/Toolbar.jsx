@@ -16,13 +16,16 @@ const Toolbar = () => {
     <nav>
         <ul>
             <li>
-            <Link to="/">Home</Link>
+                <Link to="/">Home</Link>
             </li>
             <li>
-            <Link to="/About">About</Link>
+                <Link to="/About">About</Link>
             </li>
             <li>
-            <Link to="/Technology">Technology</Link>
+                <Link to="/Technology">Technology</Link>
+            </li>
+            <li>
+                <Link to="/model"></Link>
             </li>
         </ul>
     </nav>
