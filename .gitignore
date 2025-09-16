@@ -1,1 +1,5 @@
 model/archive(1).zip
+*.json
+frontend/frontend/public/favicon.ico
+frontend/frontend/README.md
+frontend/frontend/public/robots.txt
