@@ -33,7 +33,7 @@ const AnimatedHero = () => {
   }, []);
 
   return (
-    <section className="min-h-screen bg-white text-black px-6 flex flex-col justify-center items-center">
+    <section className="min-h-screen bg-white text-black px-6 flex flex-col justify-top mt-50 items-left">
       <div className="max-w-4xl text-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
           {displayedText}
