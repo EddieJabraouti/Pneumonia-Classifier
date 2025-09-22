@@ -57,16 +57,6 @@ const Toolbar = () => {
               </li>
               <li>
                 <NavLink
-                  to="/about"
-                  className={({ isActive }) =>
-                    `${baseLink} ${isActive ? active : inactive}`
-                  }
-                >
-                  About
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
                   to="/technology"
                   className={({ isActive }) =>
                     `${baseLink} ${isActive ? active : inactive}`
