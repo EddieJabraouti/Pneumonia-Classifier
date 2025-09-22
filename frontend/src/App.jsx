@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Toolbar from '../components/Toolbar'
 import AnimatedHero from '../pages/AnimatedHero'
 import Home from '../pages/home'
-import About from '../pages/About'
 import Model from '../pages/Model'
 import Technology from '../pages/Technology'
 
