@@ -37,14 +37,14 @@ def index():
             'Authorization': os.getenv("RUNPOD_KEY"),
         }
 
-        res = request.post('<API>', 
+        res = request.post('https://api.runpod.ai/v2/mcqd9qdg80jr35/run', 
             json = {'input': {'image': image_data}},
             headers=headers)
         
         res_id = res.json()['id']
 
         for _ in range(10): 
-            status_response = request.post(f'<API>{res_id}', headers=headers)
+            status_response = request.post(f'https://api.runpod.ai/v2/mcqd9qdg80jr35/status/{res_id}', headers=headers)
             status = status_response.json()
             if status.get('status').lower() == 'completed': 
                 prediction = status['output']['prediction']
