@@ -50,11 +50,34 @@ def validate_input(job_input):
 
 
 def handler(job):
-    '''
-    This is the handler function for the job.
-    '''
     job_input = job['input']
-    name = job_input.get('name', 'World')
-    return f"Hello, {name}!"
 
-runpod.serverless.start({"handler": handler})
+    validated_data, error_message = validate_input(job_input)
+    
+    if error_message: 
+        return {'Error': error_message}
+    
+    image_base64 = validated_data['image']
+
+    try: 
+        image_bytes = base64.b64decode(image_base64)
+        image = Image.open(BytesIO(image_bytes)).convert('RGB')
+        image = transform(image)
+        image = image.unsqueeze(0)
+
+        with torch.no_grad(): 
+            output = model(image)
+            _, preds = torch.max(output, 1)
+
+            predicted_class = class_names[preds.items()]
+
+            return {'Prediction': predicted_class}
+    except base64.binascii.Error: 
+        return {'Error': 'Invalid base64 encoding'}
+    except IOError: 
+        return {"Error": "Invalid Image data"}
+    except Exception as e: 
+        return {" unexpected error": {str(e)}}
+        
+if __name__ == '__main__': 
+    runpod.serverless.start({"handler": handler})
