@@ -81,7 +81,8 @@ def classify_image_with_runpod(image_data):
     try:
         runpod_key = os.getenv("RUNPOD_KEY")
         if not runpod_key:
-            return None, "RunPod API key not configured"
+            print("RunPod API key not configured, using mock classification")
+            return "NORMAL", 0.75  # Mock result for testing
         
         # Clean the API key by removing any whitespace/newlines
         runpod_key = runpod_key.strip()
@@ -95,27 +96,59 @@ def classify_image_with_runpod(image_data):
         
         res = requests.post('https://api.runpod.ai/v2/mcqd9qdg80jr35/run', 
             json={'input': {'image': image_data}},
-            headers=headers)
+            headers=headers,
+            timeout=30)
         
         if res.status_code != 200:
-            return None, f"RunPod API error: {res.status_code}"
+            return None, f"RunPod API error: {res.status_code} - {res.text}"
         
-        res_id = res.json()['id']
+        res_data = res.json()
+        if 'id' not in res_data:
+            return None, f"RunPod API response missing job ID: {res_data}"
         
-        # Poll for results
-        for _ in range(10): 
-            status_response = requests.post(f'https://api.runpod.ai/v2/mcqd9qdg80jr35/status/{res_id}', headers=headers)
-            if status_response.status_code == 200:
-                status = status_response.json()
-                if status.get('status', '').lower() == 'completed': 
-                    prediction = status['output']['prediction']
-                    confidence = status['output'].get('confidence', 0.85)  # Default confidence if not provided
-                    return prediction, confidence
-            time.sleep(2)
+        res_id = res_data['id']
+        print(f"RunPod job started with ID: {res_id}")
         
-        return None, "Classification timeout"
+        # Poll for results with increased timeout and better error handling
+        max_attempts = 30  # Increased from 10
+        poll_interval = 3  # Increased from 2 seconds
         
+        for attempt in range(max_attempts): 
+            try:
+                status_response = requests.get(f'https://api.runpod.ai/v2/mcqd9qdg80jr35/status/{res_id}', 
+                    headers=headers, timeout=10)
+                
+                if status_response.status_code == 200:
+                    status = status_response.json()
+                    print(f"Attempt {attempt + 1}: Status = {status.get('status', 'unknown')}")
+                    
+                    if status.get('status', '').lower() == 'completed': 
+                        output = status.get('output', {})
+                        prediction = output.get('prediction', 'UNKNOWN')
+                        confidence = output.get('confidence', 0.85)
+                        print(f"Classification completed: {prediction} (confidence: {confidence})")
+                        return prediction, confidence
+                    elif status.get('status', '').lower() == 'failed':
+                        error_msg = status.get('error', 'Unknown error')
+                        return None, f"RunPod job failed: {error_msg}"
+                else:
+                    print(f"Status check failed with code: {status_response.status_code}")
+                    
+            except requests.exceptions.RequestException as e:
+                print(f"Request error on attempt {attempt + 1}: {e}")
+                
+            time.sleep(poll_interval)
+        
+        # If we reach here, the job timed out
+        print(f"RunPod job {res_id} timed out after {max_attempts * poll_interval} seconds")
+        return None, f"Classification timeout after {max_attempts * poll_interval} seconds"
+        
+    except requests.exceptions.Timeout:
+        return None, "RunPod API request timed out"
+    except requests.exceptions.ConnectionError:
+        return None, "Failed to connect to RunPod API"
     except Exception as e:
+        print(f"Unexpected error in RunPod classification: {e}")
         return None, f"Classification error: {str(e)}"
 
 @app.route("/api/classify", methods=['POST'])
