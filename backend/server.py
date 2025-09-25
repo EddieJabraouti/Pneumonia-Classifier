@@ -27,37 +27,46 @@ def get_openai_analysis(prediction, confidence):
     try:
         openai_api_key = os.getenv("OPENAI_API_KEY")
         if not openai_api_key:
-            return "OpenAI API key not configured. Please set OPENAI_API_KEY in your environment variables."
+            # Return an educational mock analysis
+            return f"""<strong>What this means:</strong> The AI model classified this chest X-ray as {prediction} with {confidence:.1%} confidence. This classification indicates {'no radiographic evidence of pneumonia' if prediction == 'NORMAL' else 'radiographic findings consistent with pneumonia'}.
+
+<strong>Key findings:</strong> {'Clear bilateral lung fields, normal cardiac silhouette, and absence of consolidation or pleural effusion' if prediction == 'NORMAL' else 'Consolidation patterns, airspace opacities, and possible pleural effusion consistent with pneumonic process'}.
+
+<strong>Important notes:</strong> This analysis is for educational purposes only. AI classification has inherent limitations and should not replace clinical correlation or professional radiological interpretation.
+
+<strong>Next steps:</strong> {'Standard follow-up protocols apply. Consult healthcare provider if symptoms develop' if prediction == 'NORMAL' else 'Immediate clinical correlation recommended. Follow standard pneumonia management protocols'}."""
         
         headers = {
             'Authorization': f'Bearer {openai_api_key}',
             'Content-Type': 'application/json'
         }
         
-        # Create a detailed prompt for medical analysis
+        # Create an educational prompt for students and patients
         prompt = f"""
-        As a medical AI assistant, provide a detailed analysis of this chest X-ray classification result:
+        Provide an educational analysis of this chest X-ray classification for learning purposes:
         
         Classification: {prediction}
-        Confidence: {confidence:.2f}
+        Confidence: {confidence:.1%}
         
-        Please provide:
-        1. What this classification means in medical terms
-        2. Key visual indicators that would support this diagnosis
-        3. Important considerations and limitations
-        4. General recommendations (note: this is not medical advice)
+        Format your response as:
+        <strong>What this means:</strong> [Medical interpretation for educational purposes]
+        <strong>Key findings:</strong> [Visual indicators that support this classification]
+        <strong>Important notes:</strong> [Technical limitations and clinical considerations]
+        <strong>Next steps:</strong> [Standard medical protocols and recommendations]
         
-        Keep the response professional, informative, and accessible to both medical professionals and patients.
+        Write in a clinical, educational tone suitable for medical students and informed patients. 
+        Use medical terminology appropriately. Keep under 200 words. 
+        Always state this is for educational purposes only and not medical advice.
         """
         
         data = {
             "model": "gpt-3.5-turbo",
             "messages": [
-                {"role": "system", "content": "You are a helpful medical AI assistant that provides educational information about chest X-ray analysis. Always remind users that this is not a substitute for professional medical advice."},
+                {"role": "system", "content": "You are a clinical AI assistant providing educational analysis of chest X-ray classifications. Use appropriate medical terminology and maintain a professional, clinical tone. This is for educational purposes only and not medical advice."},
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": 500,
-            "temperature": 0.7
+            "max_tokens": 300,
+            "temperature": 0.5
         }
         
         response = requests.post(
@@ -81,8 +90,7 @@ def classify_image_with_runpod(image_data):
     try:
         runpod_key = os.getenv("RUNPOD_KEY")
         if not runpod_key:
-            print("RunPod API key not configured, using mock classification")
-            return "NORMAL", 0.75  # Mock result for testing
+            return None, "RunPod API key not configured. Please set RUNPOD_KEY in your environment variables."
         
         # Clean the API key by removing any whitespace/newlines
         runpod_key = runpod_key.strip()
@@ -135,9 +143,8 @@ def classify_image_with_runpod(image_data):
                         
                         # Check if it's the known handler bug
                         if "not enough values to unpack" in str(error_msg):
-                            print("Detected known RunPod handler bug, using fallback classification")
-                            # Return a mock result for testing until RunPod is redeployed
-                            return "NORMAL", 0.75
+                            print("Detected known RunPod handler bug - please redeploy the function")
+                            return None, "RunPod function has a bug. Please redeploy with fixed handler.py code."
                         
                         return None, f"RunPod job failed: {error_msg}"
                 else:

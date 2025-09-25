@@ -239,9 +239,10 @@ const Model = () => {
                   AI-Generated Analysis
                 </h3>
                 <div className="prose prose-sm max-w-none">
-                  <div className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {results.analysis}
-                  </div>
+                  <div 
+                    className="text-gray-700 whitespace-pre-wrap leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: results.analysis }}
+                  />
                 </div>
               </div>
 
