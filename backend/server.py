@@ -79,12 +79,19 @@ def get_openai_analysis(prediction, confidence):
 def classify_image_with_runpod(image_data):
     """Classify image using RunPod API"""
     try:
-        headers = {
-            'Authorization': os.getenv("RUNPOD_KEY"),
-        }
-        
-        if not headers['Authorization']:
+        runpod_key = os.getenv("RUNPOD_KEY")
+        if not runpod_key:
             return None, "RunPod API key not configured"
+        
+        # Clean the API key by removing any whitespace/newlines
+        runpod_key = runpod_key.strip()
+        
+        # Debug: Print API key length (first 10 chars for security)
+        print(f"RunPod API key length: {len(runpod_key)}, starts with: {runpod_key[:10]}...")
+        
+        headers = {
+            'Authorization': runpod_key,
+        }
         
         res = requests.post('https://api.runpod.ai/v2/mcqd9qdg80jr35/run', 
             json={'input': {'image': image_data}},
