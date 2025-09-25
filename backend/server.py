@@ -124,8 +124,9 @@ def classify_image_with_runpod(image_data):
                     
                     if status.get('status', '').lower() == 'completed': 
                         output = status.get('output', {})
-                        prediction = output.get('prediction', 'UNKNOWN')
-                        confidence = output.get('confidence', 0.85)
+                        prediction = output.get('Prediction', 'UNKNOWN')
+                        # RunPod handler doesn't return confidence, so we'll use a default
+                        confidence = 0.85
                         print(f"Classification completed: {prediction} (confidence: {confidence})")
                         return prediction, confidence
                     elif status.get('status', '').lower() == 'failed':

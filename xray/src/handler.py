@@ -17,7 +17,7 @@ model.fc = nn.Sequential(
     nn.ReLU(inplace=True)
 )
 model.load_state_dict(torch.load('src/pneumonia_classifier.pth', map_location=torch.device('cpu'), weights_only=False))
-model.eval
+model.eval()
 
 transform = transforms.Compose([
     transforms.Resize(256), #Resize(420)
@@ -46,7 +46,7 @@ def validate_input(job_input):
     
     if not isinstance(image_data, str): 
         return None, 'Image must be Base64 encoded string'
-    return {'image': image_data}
+    return {'image': image_data}, None
 
 
 def handler(job):
@@ -69,7 +69,7 @@ def handler(job):
             output = model(image)
             _, preds = torch.max(output, 1)
 
-            predicted_class = class_names[preds.items()]
+            predicted_class = class_names[preds.item()]
 
             return {'Prediction': predicted_class}
     except base64.binascii.Error: 
@@ -77,7 +77,7 @@ def handler(job):
     except IOError: 
         return {"Error": "Invalid Image data"}
     except Exception as e: 
-        return {" unexpected error": {str(e)}}
+        return {"Error": str(e)}
         
 if __name__ == '__main__': 
     runpod.serverless.start({"handler": handler})
