@@ -17,15 +17,35 @@ const Model = () => {
   const [showImage, setShowImage] = useState(false); //For when the image is shown or not
   const [desc, setShowDesc] = useState(""); //For the analysis
 
+  const fileUpload = () => { 
+
+  }
+
 
 
   return (
     <div>
-      <div>
+      <div className='animated-fade-in'>
         <h1 className='text-center'>Get a classification and elaborate analysis on your own image</h1>
         <p className='text-center'>AI Powered Analysis</p>
       </div>
       <div className='rounded-2xl border border-gray-200 bg-white shadow-sm'>
+      <div>
+        <form action="" method="post" enctype="multipart/form/data</div></div></div>">
+          <label className="border border-gray rounded" for="fileUpload">Upload Image: </label>
+          <input type="file" name="uploadedFile"></input>
+          <br></br>
+          <input className="border border-gray rounded" type='submit' value='upload file'></input>
+        </form>
+      </div>
+      <div>
+        <div>
+        <h1>Analysis of Classificiation</h1>
+        </div>  
+        <div>
+          <p>Analysis...</p>
+        </div>
+      </div>
 
       </div>
     </div>

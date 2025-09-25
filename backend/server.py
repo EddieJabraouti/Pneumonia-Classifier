@@ -23,7 +23,7 @@ import time
 from dotenv import load_dotenv
 import os
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
