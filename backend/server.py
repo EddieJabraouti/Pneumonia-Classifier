@@ -102,10 +102,12 @@ def classify_image_with_runpod(image_data):
             'Authorization': runpod_key,
         }
         
-        res = requests.post('https://api.runpod.ai/v2/mcqd9qdg80jr35/run', 
+        res = requests.post(
+            'https://api.runpod.ai/v2/mcqd9qdg80jr35/run',
             json={'input': {'image': image_data}},
             headers=headers,
-            timeout=30)
+            timeout=int(os.getenv('RUNPOD_RUN_TIMEOUT', '60'))
+        )
         
         if res.status_code != 200:
             return None, f"RunPod API error: {res.status_code} - {res.text}"
@@ -117,14 +119,20 @@ def classify_image_with_runpod(image_data):
         res_id = res_data['id']
         print(f"RunPod job started with ID: {res_id}")
         
-        # Poll for results with increased timeout and better error handling
-        max_attempts = 30  # Increased from 10
-        poll_interval = 3  # Increased from 2 seconds
+        # Poll for results with configurable timeout and interval
+        max_attempts = int(os.getenv('RUNPOD_MAX_ATTEMPTS', '180'))
+        poll_interval = float(os.getenv('RUNPOD_POLL_INTERVAL', '3.0'))
+        status_timeout = int(os.getenv('RUNPOD_STATUS_TIMEOUT', '180'))
+        status_url = f'https://api.runpod.ai/v2/mcqd9qdg80jr35/status/{res_id}'
         
         for attempt in range(max_attempts): 
             try:
-                status_response = requests.get(f'https://api.runpod.ai/v2/mcqd9qdg80jr35/status/{res_id}', 
-                    headers=headers, timeout=10)
+                # RunPod status checks often expect POST
+                status_response = requests.post(
+                    status_url,
+                    headers=headers,
+                    timeout=status_timeout
+                )
                 
                 if status_response.status_code == 200:
                     status = status_response.json()
