@@ -1,40 +1,25 @@
 
+**Pneumonia Classifier:**
+This project is a web application that classifies chest X-ray images as either Pneumonia or Normal using a deep-learning model. The repository is organized into a Python backend for model inference and an API, a JavaScript frontend for the user interface, a model area for training assets, and an xray folder with sample images. The repository language breakdown indicates primarily JavaScript and Python, and a Dockerfile is included for containerization. 
 
-Pneumonia Classifier
-This project is a web application that classifies chest X-ray images as either Pneumonia or Normal using a deep learning model. It is organized with a Python backend that provides an API for inference, a JavaScript frontend for the user interface, and a Dockerfile for containerized deployment. A small collection of X-ray images is also included for quick testing.
+**What’s included:**
+The backend directory contains the server-side code that loads the model and exposes endpoints for inference. The frontend directory contains the client-side code that provides the user experience for uploading images and viewing predictions. The model directory is intended for training scripts, notebooks, and model weights. The xray directory includes example chest X-ray images suitable for quick local checks. The presence of these top-level folders is visible on the repository’s main page
 
-Features
-The application allows users to upload a chest X-ray image and immediately receive a classification result with a confidence score. A REST API is provided so predictions can also be requested programmatically. The repository includes training and fine-tuning code in the model folder and is designed to run both locally and inside a Docker container.
+**Running the project:**
+You can run this project either in a container or directly on your machine. If you choose a containerized workflow, build the image from the Dockerfile at the repository root and then start a container from that image. When the server starts, read the terminal or container logs to determine the exact address and port it is listening on; use that printed address to access the running service. If you prefer local development, set up the backend by creating an isolated Python environment, install the dependencies specified by the backend, and start the application using the entry point defined in the backend code. Set up the frontend by installing its JavaScript dependencies and running the development server defined by its package script. In both cases, rely on the process output to learn the active host, port, and any auto-generated links rather than assuming specific values.
 
-Quick Start
-To run the application using Docker, you first build the Docker image with the command “docker build -t pneumonia-classifier .” and then start the container with “docker run -p 8000:8000 pneumonia-classifier”. Once the container is running, the backend API documentation is available at http://localhost:8000/docs, and if the frontend runs separately, it can be opened at http://localhost:5173.
-For local development without Docker, start with the backend. Navigate into the backend folder, create a virtual environment, activate it, and install the dependencies listed in requirements.txt. Once that is complete, you can launch the API server with Uvicorn, which by default will serve the application at http://localhost:8000. For the frontend, navigate into the frontend folder, install the Node dependencies with npm install, and then run the development server with npm run dev. The frontend will usually be available at http://localhost:5173.
+**API overview:**
+The backend exposes an HTTP interface for image classification. The typical pattern is to send an image file to an inference endpoint and receive a JSON response containing a predicted label and a confidence score. Consult the backend source to confirm the exact path of the inference route, the HTTP method, the expected form or JSON field names, and any authentication or CORS behavior. Avoid assuming endpoint names such as “/predict” or documentation routes; instead, verify them directly in the code or in runtime logs.
 
-API Usage
-To classify an image through the API, send a POST request to the /predict endpoint with a chest X-ray file attached as form data. The server will respond with a JSON object containing the predicted label (for example, PNEUMONIA or NORMAL) and a confidence value between 0 and 1.
+**Frontend usage:**
+Once the frontend is running, open the address shown by the frontend’s startup output. Use the UI to select an X-ray image and submit it to the backend. The page will display the model’s prediction and any associated confidence or error messages. If the frontend is designed to be served by the backend in production, follow the project’s build instructions and ensure the backend is configured to serve the built assets; otherwise, run the two services separately and configure the frontend to point to the backend’s actual URL.
+Training and fine-tuning
+Use the model directory for training and experimentation. The usual workflow is to obtain a suitable chest X-ray dataset, run the provided training or fine-tuning script or notebook, and produce a weights file compatible with the backend’s loader. After training, place the resulting weights where the backend expects them and update any configuration variables so inference uses your newly trained model.
 
-Repository Structure
-The backend folder contains the Python API and inference code. The frontend folder holds the JavaScript user interface. The model folder is where you will find training scripts, notebooks, and saved weights. The xray folder provides example chest X-ray images for testing. At the top level, a Dockerfile is included for container builds.
+**Configuration:** 
+Common configuration items include a path to the model weights, the compute device selection (for example, CPU or a supported GPU), file-type allowlists for uploads, and any classification thresholds that control decision behavior. Store these settings in environment variables or configuration files as the backend expects. Always consult the backend code to confirm variable names and defaults rather than inferring them.
 
-Training or Fine-Tuning
-Inside the model folder you may find scripts or notebooks for training the classifier. The general workflow is to first download a chest X-ray dataset, then run the training script with your dataset and training parameters, which will generate a new weights file. Once training is complete, place the resulting weights file in the model folder and update the backend configuration to point to it so that the application uses your trained model.
-
-Configuration
-Several configuration values are commonly adjusted. These include the model path that points to the trained weights file, the device which can be set to either CPU or CUDA, the threshold that controls the decision boundary for classification, and the list of allowed file types such as jpg or png. These can be stored in a configuration file or set as environment variables.
-
-Example Workflow
-The typical workflow is to build and run the app either with Docker or through local development, then open the frontend in a browser. You can upload a chest X-ray image through the interface and receive the classification result with a confidence score. Alternatively, you can send requests directly to the backend API using tools such as curl or Postman.
-
-Disclaimer
-This project is for research and educational purposes only. It is not a medical device and must not be used for clinical decision-making. For any medical concerns, always consult a licensed healthcare professional.
-
-Acknowledgments
-This project draws on public chest X-ray datasets such as the NIH ChestX-ray dataset, the RSNA Pneumonia Detection Challenge dataset, or the Guangzhou pediatric dataset. It also makes use of open-source frameworks such as PyTorch or TensorFlow for deep learning, FastAPI or Flask for the backend, and React or Vite for the frontend.
-
-License
-Choose an open-source license such as MIT or Apache-2.0 and add it as a LICENSE file in the repository.
-
-Contributing
-To contribute, fork the repository, create a new branch for your feature or fix, make your changes with clear commit messages, and open a pull request describing your updates.
-
-
+**Typical workflow:**
+Decide whether to run with containers or locally. Start the backend and note the exact address that the server prints when it becomes ready. Start the frontend and note its printed address. If the two services run separately, configure the frontend to call the backend using the real backend address. Upload a test image from the xray folder and confirm you receive a prediction and a confidence value. If anything fails, read the server logs to identify missing files, misconfigured paths, or cross-origin issues and adjust configuration accordingly. The xray folder’s presence is visible on the repository page and is useful for quick checks. 
+Reliability and safety
+Outputs from this project are for research and educational purposes only. They are not intended for clinical or diagnostic use. Always consult qualified medical professionals before making medical decisions, and follow all applicable regulations and institutional policies if you adapt this work for real-world contexts
