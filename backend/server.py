@@ -55,7 +55,7 @@ def get_openai_analysis(prediction, confidence):
         <strong>Next steps:</strong> [Standard medical protocols and recommendations]
         
         Write in a clinical, educational tone suitable for medical students and informed patients. 
-        Use medical terminology appropriately. Keep under 200 words. 
+        Use medical terminology appropriately. Make it around 400 words. 
         Always state this is for educational purposes only and not medical advice.
         """
         
@@ -65,7 +65,7 @@ def get_openai_analysis(prediction, confidence):
                 {"role": "system", "content": "You are a clinical AI assistant providing educational analysis of chest X-ray classifications. Use appropriate medical terminology and maintain a professional, clinical tone. This is for educational purposes only and not medical advice."},
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": 300,
+            "max_tokens": 1000,
             "temperature": 0.5
         }
         
